@@ -279,8 +279,9 @@ module "eks_managed_node_group" {
   cluster_ip_family = var.cluster_ip_family
 
   # EKS Managed Node Group
-  name            = try(each.value.name, each.key)
-  use_name_prefix = try(each.value.use_name_prefix, var.eks_managed_node_group_defaults.use_name_prefix, true)
+  name                             = try(each.value.name, each.key)
+  use_name_prefix                  = try(each.value.use_name_prefix, var.eks_managed_node_group_defaults.use_name_prefix, true)
+  node_group_name_prefix_separator = try(each.value.node_group_name_prefix_separator, var.eks_managed_node_group_defaults.node_group_name_prefix_separator, true)
 
   subnet_ids = try(each.value.subnet_ids, var.eks_managed_node_group_defaults.subnet_ids, var.subnet_ids)
 
