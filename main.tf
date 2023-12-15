@@ -346,6 +346,43 @@ resource "aws_iam_role_policy_attachment" "additional" {
   role       = aws_iam_role.this[0].name
 }
 
+## ==> SECTION OF ELB IAM ROLE
+## This is from v17.24.0 and because it was created as part of module putting it here
+## instead of defining same block of code in each cluster folder and passing in as value
+
+/*
+ Adding a policy to cluster IAM role that allow permissions
+ required to create AWSServiceRoleForElasticLoadBalancing service-linked role by EKS during ELB provisioning
+*/
+
+data "aws_iam_policy_document" "cluster_elb_sl_role_creation" {
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "ec2:DescribeAccountAttributes",
+      "ec2:DescribeInternetGateways",
+      "ec2:DescribeAddresses"
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "cluster_elb_sl_role_creation" {
+  name_prefix = "${var.cluster_name}-elb-sl-role-creation"
+  description = "Permissions for EKS to create AWSServiceRoleForElasticLoadBalancing service-linked role"
+  policy      = data.aws_iam_policy_document.cluster_elb_sl_role_creation[0].json
+
+  tags = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "cluster_elb_sl_role_creation" {
+  policy_arn = aws_iam_policy.cluster_elb_sl_role_creation[0].arn
+  role       = aws_iam_role.this[0].name
+}
+
+## <== END OF SECTION OF ELB IAM ROLE
+
 # Using separate attachment due to `The "for_each" value depends on resource attributes that cannot be determined until apply`
 resource "aws_iam_role_policy_attachment" "cluster_encryption" {
   # Encryption config not available on Outposts
